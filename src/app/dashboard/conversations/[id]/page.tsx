@@ -1,13 +1,14 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
-import { useParams } from 'next/navigation';
-import { useConversationDetail, useSendReply, useTakeoverConversation, useReleaseConversation, useCancelFollowup, useScheduleFollowup } from '@/lib/hooks/useDashboard';
+import { useState, FormEvent, useEffect } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { useConversationDetail, useSendReply, useTakeoverConversation, useReleaseConversation, useCancelFollowup, useScheduleFollowup, useUpdateRequiresHuman } from '@/lib/hooks/useDashboard';
 import { format } from 'date-fns';
 import Link from 'next/link';
 
 export default function ConversationDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const conversationId = params?.id as string;
 
   const { data: conversation, isLoading, error } = useConversationDetail(conversationId);
@@ -16,21 +17,99 @@ export default function ConversationDetailPage() {
   const releaseMutation = useReleaseConversation(conversationId);
   const cancelFollowupMutation = useCancelFollowup(conversationId);
   const scheduleFollowupMutation = useScheduleFollowup(conversationId);
+  const updateRequiresHumanMutation = useUpdateRequiresHuman(conversationId);
 
   const [replyMessage, setReplyMessage] = useState('');
-  const [showFollowupOptions, setShowFollowupOptions] = useState(false);
+  const [selectedFollowup, setSelectedFollowup] = useState<'none' | 24 | 48 | 72>('none');
+  const [showExitConfirmation, setShowExitConfirmation] = useState(false);
+  const [showReleaseConfirmation, setShowReleaseConfirmation] = useState(false);
+  const [isNavigatingAway, setIsNavigatingAway] = useState(false);
+  const [hasSentMessage, setHasSentMessage] = useState(false);
 
   const handleSendReply = async (e: FormEvent) => {
     e.preventDefault();
     if (!replyMessage.trim()) return;
 
     try {
+      // Auto-takeover when human sends reply
+      if (!conversation?.inHumanHandling) {
+        await takeoverMutation.mutateAsync();
+      }
+      
       await sendReply.mutateAsync(replyMessage);
       setReplyMessage('');
+      setHasSentMessage(true); // Mark that human sent a message
     } catch (err) {
       console.error('Failed to send reply:', err);
     }
   };
+
+  const handleReleaseClick = () => {
+    // If conversation requires human and human hasn't sent a message, show confirmation
+    if (conversation?.requiresHuman && !hasSentMessage) {
+      setShowReleaseConfirmation(true);
+    } else {
+      // Direct release if no confirmation needed
+      releaseMutation.mutate();
+    }
+  };
+
+  const handleReleaseConfirmation = async (contacted: boolean) => {
+    try {
+      // Update requiresHuman based on whether human contacted customer
+      await updateRequiresHumanMutation.mutateAsync(!contacted);
+      // Then release to AI
+      await releaseMutation.mutateAsync();
+      setShowReleaseConfirmation(false);
+    } catch (err) {
+      console.error('Failed to release conversation:', err);
+    }
+  };
+
+  const handleBackClick = (e: React.MouseEvent) => {
+    // If conversation requires human and human is handling, show confirmation
+    if (conversation?.requiresHuman && conversation?.inHumanHandling) {
+      e.preventDefault();
+      setShowExitConfirmation(true);
+    }
+  };
+
+  const handleExitConfirmation = async (contacted: boolean) => {
+    try {
+      // Update requiresHuman based on whether human contacted customer
+      await updateRequiresHumanMutation.mutateAsync(!contacted);
+      setShowExitConfirmation(false);
+      setIsNavigatingAway(true);
+      router.push('/dashboard/conversations');
+    } catch (err) {
+      console.error('Failed to update conversation:', err);
+    }
+  };
+
+  // Auto-apply followup changes when selection changes
+  useEffect(() => {
+    if (!conversation || isNavigatingAway) return;
+    
+    const applyFollowupChange = async () => {
+      if (selectedFollowup === 'none') {
+        // If "No Followup" is selected, cancel any existing followups
+        if (conversation?.followup.hasPending) {
+          await cancelFollowupMutation.mutateAsync();
+        }
+      } else {
+        // Schedule followup with selected delay
+        await scheduleFollowupMutation.mutateAsync(selectedFollowup);
+      }
+    };
+
+    // Debounce the followup scheduling
+    const timer = setTimeout(() => {
+      applyFollowupChange();
+    }, 500);
+
+    return () => clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedFollowup]);
 
   if (isLoading) {
     return (
@@ -58,10 +137,80 @@ export default function ConversationDetailPage() {
 
   return (
     <div className="space-y-6">
+      {/* Exit Confirmation Modal */}
+      {showExitConfirmation && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl p-6 max-w-md mx-4">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Did you contact the customer?</h3>
+            <p className="text-gray-600 mb-6">
+              Before leaving, please confirm if you were able to connect with the customer.
+              This helps us track which conversations still need attention.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => handleExitConfirmation(true)}
+                disabled={updateRequiresHumanMutation.isPending}
+                className="flex-1 px-4 py-3 text-sm font-semibold bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400 disabled:opacity-50"
+              >
+                ✓ Yes, I contacted them
+              </button>
+              <button
+                onClick={() => handleExitConfirmation(false)}
+                disabled={updateRequiresHumanMutation.isPending}
+                className="flex-1 px-4 py-3 text-sm font-semibold bg-orange-600 text-white rounded-lg hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-400 disabled:opacity-50"
+              >
+                ✗ No, still needs attention
+              </button>
+            </div>
+            <button
+              onClick={() => setShowExitConfirmation(false)}
+              className="mt-4 w-full px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Release Confirmation Modal */}
+      {showReleaseConfirmation && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl p-6 max-w-md mx-4">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Did you contact the customer?</h3>
+            <p className="text-gray-600 mb-6">
+              Before releasing this conversation back to AI, please confirm if you were able to connect with the customer.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => handleReleaseConfirmation(true)}
+                disabled={updateRequiresHumanMutation.isPending || releaseMutation.isPending}
+                className="flex-1 px-4 py-3 text-sm font-semibold bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400 disabled:opacity-50"
+              >
+                ✓ Yes, I contacted them
+              </button>
+              <button
+                onClick={() => handleReleaseConfirmation(false)}
+                disabled={updateRequiresHumanMutation.isPending || releaseMutation.isPending}
+                className="flex-1 px-4 py-3 text-sm font-semibold bg-orange-600 text-white rounded-lg hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-400 disabled:opacity-50"
+              >
+                ✗ No, still needs attention
+              </button>
+            </div>
+            <button
+              onClick={() => setShowReleaseConfirmation(false)}
+              className="mt-4 w-full px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div>
         <Link
           href="/dashboard/conversations"
+          onClick={handleBackClick}
           className="text-blue-600 hover:text-blue-700 text-sm mb-4 inline-block"
         >
           ← Back to conversations
@@ -106,7 +255,7 @@ export default function ConversationDetailPage() {
         <div className="mt-6 flex gap-3">
           {conversation.inHumanHandling ? (
             <button
-              onClick={() => releaseMutation.mutate()}
+              onClick={handleReleaseClick}
               disabled={releaseMutation.isPending}
               className="px-6 py-2.5 text-sm font-semibold bg-gradient-to-r from-emerald-600 to-green-600 text-white rounded-lg hover:from-emerald-700 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm hover:shadow-md"
             >
@@ -132,66 +281,95 @@ export default function ConversationDetailPage() {
 
         {/* Followup Controls - Only show when human is handling */}
         {conversation.inHumanHandling && (
-          <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <div className="flex items-center justify-between mb-3">
-              <div>
-                <h3 className="text-sm font-semibold text-gray-900">Followup Management</h3>
-                <p className="text-xs text-gray-600 mt-1">
-                  {conversation.followup.hasPending 
-                    ? `Scheduled for ${format(new Date(conversation.followup.nextScheduledAt!), 'MMM d, h:mm a')}`
-                    : 'No followup scheduled'}
-                </p>
-              </div>
-              <button
-                onClick={() => setShowFollowupOptions(!showFollowupOptions)}
-                className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-              >
-                {showFollowupOptions ? 'Hide' : 'Manage'}
-              </button>
+          <div className="mt-4 bg-gradient-to-br from-purple-50 to-blue-50 border-2 border-purple-200 rounded-lg p-5">
+            <div className="mb-4">
+              <h3 className="text-base font-bold text-gray-900 mb-1">⏰ Followup Management</h3>
+              <p className="text-sm text-gray-600">
+                Choose when to follow up with this customer. Changes are saved automatically.
+              </p>
             </div>
 
-            {showFollowupOptions && (
-              <div className="flex flex-wrap gap-2 pt-3 border-t border-blue-200">
-                {conversation.followup.hasPending && (
-                  <button
-                    onClick={() => cancelFollowupMutation.mutate()}
-                    disabled={cancelFollowupMutation.isPending}
-                    className="px-4 py-2 text-sm font-medium bg-red-100 text-red-700 rounded-lg hover:bg-red-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {cancelFollowupMutation.isPending ? 'Cancelling...' : '❌ Cancel Followup'}
-                  </button>
-                )}
-                
-                <button
-                  onClick={() => scheduleFollowupMutation.mutate(24)}
-                  disabled={scheduleFollowupMutation.isPending}
-                  className="px-4 py-2 text-sm font-medium bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {scheduleFollowupMutation.isPending ? 'Scheduling...' : '📅 Schedule 24h'}
-                </button>
+            <div className="space-y-3">
+              {/* No Followup Option - Default */}
+              <label className="flex items-start p-4 bg-white border-2 rounded-lg cursor-pointer hover:border-gray-400 transition-colors">
+                <input
+                  type="radio"
+                  name="followup"
+                  value="none"
+                  checked={selectedFollowup === 'none'}
+                  onChange={() => setSelectedFollowup('none')}
+                  className="mt-1 w-4 h-4 text-gray-600"
+                />
+                <div className="ml-3 flex-1">
+                  <div className="text-sm font-semibold text-gray-900">🚫 No Followup Needed</div>
+                  <div className="text-xs text-gray-600 mt-0.5">Customer issue resolved or no followup required</div>
+                </div>
+              </label>
 
-                <button
-                  onClick={() => scheduleFollowupMutation.mutate(48)}
-                  disabled={scheduleFollowupMutation.isPending}
-                  className="px-4 py-2 text-sm font-medium bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  📅 Schedule 48h
-                </button>
+              {/* 24 Hours Option */}
+              <label className="flex items-start p-4 bg-white border-2 rounded-lg cursor-pointer hover:border-purple-400 transition-colors">
+                <input
+                  type="radio"
+                  name="followup"
+                  value="24"
+                  checked={selectedFollowup === 24}
+                  onChange={() => setSelectedFollowup(24)}
+                  className="mt-1 w-4 h-4 text-purple-600"
+                />
+                <div className="ml-3 flex-1">
+                  <div className="text-sm font-semibold text-gray-900">📅 Follow up in 24 hours</div>
+                  <div className="text-xs text-gray-600 mt-0.5">Tomorrow</div>
+                </div>
+              </label>
 
-                <button
-                  onClick={() => scheduleFollowupMutation.mutate(72)}
-                  disabled={scheduleFollowupMutation.isPending}
-                  className="px-4 py-2 text-sm font-medium bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  📅 Schedule 3 days
-                </button>
+              {/* 48 Hours Option */}
+              <label className="flex items-start p-4 bg-white border-2 rounded-lg cursor-pointer hover:border-purple-400 transition-colors">
+                <input
+                  type="radio"
+                  name="followup"
+                  value="48"
+                  checked={selectedFollowup === 48}
+                  onChange={() => setSelectedFollowup(48)}
+                  className="mt-1 w-4 h-4 text-purple-600"
+                />
+                <div className="ml-3 flex-1">
+                  <div className="text-sm font-semibold text-gray-900">📅 Follow up in 48 hours</div>
+                  <div className="text-xs text-gray-600 mt-0.5">In 2 days</div>
+                </div>
+              </label>
 
-                {(cancelFollowupMutation.isSuccess || scheduleFollowupMutation.isSuccess) && (
-                  <div className="w-full mt-2 px-3 py-2 text-xs font-medium text-green-700 bg-green-50 border border-green-200 rounded">
-                    {cancelFollowupMutation.isSuccess && '✓ Followup cancelled'}
-                    {scheduleFollowupMutation.isSuccess && '✓ Followup scheduled successfully'}
-                  </div>
-                )}
+              {/* 72 Hours Option */}
+              <label className="flex items-start p-4 bg-white border-2 rounded-lg cursor-pointer hover:border-purple-400 transition-colors">
+                <input
+                  type="radio"
+                  name="followup"
+                  value="72"
+                  checked={selectedFollowup === 72}
+                  onChange={() => setSelectedFollowup(72)}
+                  className="mt-1 w-4 h-4 text-purple-600"
+                />
+                <div className="ml-3 flex-1">
+                  <div className="text-sm font-semibold text-gray-900">📅 Follow up in 3 days</div>
+                  <div className="text-xs text-gray-600 mt-0.5">In 72 hours</div>
+                </div>
+              </label>
+            </div>
+
+            {/* Status Message */}
+            {(cancelFollowupMutation.isSuccess || scheduleFollowupMutation.isSuccess) && (
+              <div className="mt-3 px-4 py-2.5 text-sm font-medium text-green-800 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2">
+                <span className="text-lg">✓</span>
+                <span>
+                  {cancelFollowupMutation.isSuccess && 'Followup cancelled successfully'}
+                  {scheduleFollowupMutation.isSuccess && 'Followup scheduled successfully'}
+                </span>
+              </div>
+            )}
+
+            {(cancelFollowupMutation.isPending || scheduleFollowupMutation.isPending) && (
+              <div className="mt-3 px-4 py-2.5 text-sm font-medium text-blue-800 bg-blue-50 border border-blue-200 rounded-lg flex items-center gap-2">
+                <span className="animate-spin">⏳</span>
+                <span>Updating followup...</span>
               </div>
             )}
           </div>

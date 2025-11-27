@@ -129,6 +129,14 @@ const scheduleFollowup = async (conversationId: string, delayHours?: number): Pr
   return data;
 };
 
+const updateRequiresHuman = async (conversationId: string, requiresHuman: boolean): Promise<{ success: boolean; requiresHuman: boolean }> => {
+  const { data } = await apiClient.post<{ success: boolean; requiresHuman: boolean }>(
+    `/dashboard/conversations/${conversationId}/requires-human`,
+    { requiresHuman }
+  );
+  return data;
+};
+
 // Hooks
 export const useTodaySummary = (date: 'today' | 'yesterday' | 'dayBeforeYesterday' = 'today') => {
   return useQuery({
@@ -218,6 +226,22 @@ export const useScheduleFollowup = (conversationId: string) => {
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['dashboard', 'conversation', conversationId],
+      });
+    },
+  });
+};
+
+export const useUpdateRequiresHuman = (conversationId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (requiresHuman: boolean) => updateRequiresHuman(conversationId, requiresHuman),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['dashboard', 'conversation', conversationId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['dashboard', 'conversations'],
       });
     },
   });
