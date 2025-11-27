@@ -34,22 +34,22 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-lg shadow-lg p-6 border-2 border-purple-200">
-        <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">Dashboard Overview</h2>
-        <p className="text-gray-700 mt-2 text-base font-semibold">Monitor your AI assistant&apos;s performance</p>
+      <div className="bg-white rounded-2xl shadow-sm p-6 border border-blue-100">
+        <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Dashboard Overview</h2>
+        <p className="text-gray-600 mt-2 text-base font-medium">Monitor your AI assistant's performance</p>
       </div>
 
       {/* Date Range Tabs */}
-      <div className="bg-white rounded-lg shadow-lg border-2 border-purple-200 p-4">
-        <div className="flex gap-2">
+      <div className="bg-white rounded-2xl shadow-sm border border-blue-100 p-4">
+        <div className="flex gap-3">
           {(['today', 'yesterday', 'dayBeforeYesterday'] as DateRange[]).map((date) => (
             <button
               key={date}
               onClick={() => setSelectedDate(date)}
-              className={`px-6 py-3 text-sm font-semibold rounded-lg transition-all ${
+              className={`px-6 py-3 text-sm font-semibold rounded-xl transition-all ${
                 selectedDate === date
-                  ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg'
-                  : 'bg-purple-100 text-purple-700 hover:bg-purple-200'
+                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
               {dateLabels[date]}
@@ -89,61 +89,61 @@ export default function DashboardPage() {
 
       {/* Message Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white rounded-lg shadow-md border-2 border-blue-200 p-6">
-          <h3 className="text-lg font-bold text-gray-900 mb-3">Customer Messages</h3>
+        <div className="bg-white rounded-2xl shadow-sm border-2 border-blue-200 p-6">
+          <h3 className="text-lg font-bold text-blue-900 mb-3">Customer Messages</h3>
           <p className="text-4xl font-bold text-blue-600">{summary?.totalMessagesFromCustomersToday || 0}</p>
           <p className="text-sm font-medium text-gray-600 mt-2">Received {dateLabels[selectedDate].toLowerCase()}</p>
         </div>
-        <div className="bg-white rounded-lg shadow-md border-2 border-green-200 p-6">
-          <h3 className="text-lg font-bold text-gray-900 mb-3">Bizta Messages</h3>
-          <p className="text-4xl font-bold text-green-600">{summary?.totalMessagesFromBiztaToday || 0}</p>
+        <div className="bg-white rounded-2xl shadow-sm border-2 border-emerald-200 p-6">
+          <h3 className="text-lg font-bold text-emerald-900 mb-3">Bizta Messages</h3>
+          <p className="text-4xl font-bold text-emerald-600">{summary?.totalMessagesFromBiztaToday || 0}</p>
           <p className="text-sm font-medium text-gray-600 mt-2">Sent {dateLabels[selectedDate].toLowerCase()}</p>
         </div>
       </div>
 
       {/* Top Intents */}
-      <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
+      <div className="bg-white rounded-2xl shadow-sm border border-blue-100 p-6">
         <h3 className="text-xl font-bold text-gray-900 mb-4">Top Customer Intents</h3>
         {summary?.topIntents && summary.topIntents.length > 0 ? (
           <div className="space-y-3">
             {summary.topIntents.map((item) => (
-              <div key={item.intent} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <div key={item.intent} className="flex items-center justify-between p-3 bg-blue-50 rounded-xl border border-blue-100">
                 <div className="flex items-center gap-3">
                   <div className="w-3 h-3 bg-blue-600 rounded-full" />
                   <span className="text-base font-semibold text-gray-800">
                     {item.intent || 'Unknown'}
                   </span>
                 </div>
-                <span className="text-base font-bold text-gray-700 bg-blue-100 px-3 py-1 rounded-full">
+                <span className="text-base font-bold text-white bg-blue-600 px-3 py-1 rounded-full">
                   {item.count}
                 </span>
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-gray-600 text-base font-medium">No data for {dateLabels[selectedDate].toLowerCase()}</p>
+          <p className="text-gray-500 text-base font-medium">No data for {dateLabels[selectedDate].toLowerCase()}</p>
         )}
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
+      <div className="bg-white rounded-2xl shadow-sm border border-blue-100 p-6">
         <h3 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Link
             href="/dashboard/conversations?filter=requiresHuman"
-            className="p-5 border-2 border-orange-300 bg-orange-50 rounded-lg hover:border-orange-500 hover:bg-orange-100 transition-all hover:shadow-md"
+            className="p-5 border-2 border-orange-200 bg-orange-50 rounded-xl hover:border-orange-300 hover:bg-orange-100 transition-all hover:shadow-sm"
           >
-            <h4 className="font-bold text-gray-900 mb-2 text-base">Review Human Requests</h4>
-            <p className="text-sm font-medium text-gray-700">
+            <h4 className="font-bold text-orange-900 mb-2 text-base">Review Human Requests</h4>
+            <p className="text-sm font-medium text-orange-700">
               Check conversations that need your attention
             </p>
           </Link>
           <Link
             href="/dashboard/conversations"
-            className="p-5 border-2 border-blue-300 bg-blue-50 rounded-lg hover:border-blue-500 hover:bg-blue-100 transition-all hover:shadow-md"
+            className="p-5 border-2 border-blue-200 bg-blue-50 rounded-xl hover:border-blue-300 hover:bg-blue-100 transition-all hover:shadow-sm"
           >
-            <h4 className="font-bold text-gray-900 mb-2 text-base">All Conversations</h4>
-            <p className="text-sm font-medium text-gray-700">
+            <h4 className="font-bold text-blue-900 mb-2 text-base">All Conversations</h4>
+            <p className="text-sm font-medium text-blue-700">
               Browse all customer interactions
             </p>
           </Link>
@@ -167,28 +167,28 @@ function StatCard({
   link?: string;
 }) {
   const colorClasses = {
-    blue: 'text-blue-700 bg-blue-50',
-    green: 'text-emerald-700 bg-emerald-50',
-    orange: 'text-amber-700 bg-amber-50',
-    purple: 'text-purple-700 bg-purple-50',
+    blue: 'text-blue-600',
+    green: 'text-emerald-600',
+    orange: 'text-orange-600',
+    purple: 'text-indigo-600',
   };
 
   const borderClasses = {
-    blue: 'border-blue-400',
-    green: 'border-emerald-400',
-    orange: 'border-amber-400',
-    purple: 'border-purple-400',
+    blue: 'border-blue-200',
+    green: 'border-emerald-200',
+    orange: 'border-orange-200',
+    purple: 'border-indigo-200',
   };
 
   const content = (
     <>
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">{title}</h3>
+        <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide">{title}</h3>
       </div>
-      <div className={`text-4xl font-bold ${colorClasses[color].split(' ')[0]} mb-2`}>
+      <div className={`text-4xl font-bold ${colorClasses[color]} mb-2`}>
         {value}
       </div>
-      <p className="text-sm font-medium text-gray-600">{description}</p>
+      <p className="text-sm font-medium text-gray-500">{description}</p>
     </>
   );
 
@@ -196,7 +196,7 @@ function StatCard({
     return (
       <Link
         href={link}
-        className={`bg-white rounded-lg shadow-md border-2 ${borderClasses[color]} p-6 hover:shadow-xl transition-all hover:scale-105`}
+        className={`bg-white rounded-2xl shadow-sm border-2 ${borderClasses[color]} p-6 hover:shadow-md transition-all hover:scale-[1.02]`}
       >
         {content}
       </Link>
@@ -204,7 +204,7 @@ function StatCard({
   }
 
   return (
-    <div className={`bg-white rounded-lg shadow-md border-2 ${borderClasses[color]} p-6`}>
+    <div className={`bg-white rounded-2xl shadow-sm border-2 ${borderClasses[color]} p-6`}>
       {content}
     </div>
   );

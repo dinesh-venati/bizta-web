@@ -155,8 +155,8 @@ export default function ConversationDetailPage() {
       </div>
 
       {/* Reply Form */}
-      <div className="bg-white rounded-lg shadow-lg border-2 border-purple-200 p-6">
-        <h3 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-4">Send Human Reply</h3>
+      <div className="bg-white rounded-2xl shadow-sm border border-blue-100 p-6">
+        <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-4">Send Human Reply</h3>
         
         <form onSubmit={handleSendReply} className="space-y-4">
           <textarea
@@ -164,12 +164,12 @@ export default function ConversationDetailPage() {
             onChange={(e) => setReplyMessage(e.target.value)}
             placeholder="Type your message..."
             rows={4}
-            className="w-full px-4 py-3 text-base font-medium text-gray-900 border-2 border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-purple-50 placeholder:text-gray-500 placeholder:font-normal"
+            className="w-full px-4 py-3 text-base font-medium text-gray-800 border-2 border-blue-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 bg-blue-50/50 placeholder:text-gray-400 placeholder:font-normal"
             required
           />
           
           {sendReply.isError && (
-            <div className="p-4 text-sm font-semibold text-red-800 bg-red-100 border-2 border-red-300 rounded-lg">
+            <div className="p-4 text-sm font-semibold text-red-800 bg-red-50 border-2 border-red-200 rounded-xl">
               Failed to send message. Please try again.
             </div>
           )}
@@ -178,7 +178,7 @@ export default function ConversationDetailPage() {
             <button
               type="submit"
               disabled={sendReply.isPending || !replyMessage.trim()}
-              className="px-8 py-3 text-base font-bold bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 focus:outline-none focus:ring-4 focus:ring-purple-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
+              className="px-8 py-3 text-base font-bold bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-4 focus:ring-blue-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg transform hover:scale-[1.02]"
             >
               {sendReply.isPending ? 'Sending...' : 'Send Message'}
             </button>

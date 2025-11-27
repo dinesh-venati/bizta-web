@@ -27,16 +27,16 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      <div className="w-full max-w-md p-10 bg-white rounded-2xl shadow-2xl border-2 border-purple-200">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-100">
+      <div className="w-full max-w-md p-10 bg-white rounded-3xl shadow-2xl border border-blue-100">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">Bizta Dashboard</h1>
-          <p className="text-gray-700 font-semibold">Sign in to your account</p>
+          <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-3">Bizta</h1>
+          <p className="text-gray-600 font-medium text-lg">Welcome Back</p>
         </div>
         
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label htmlFor="email" className="block text-sm font-bold text-purple-900 mb-2 uppercase tracking-wide">
+            <label htmlFor="email" className="block text-sm font-bold text-blue-900 mb-2 uppercase tracking-wide">
               Email
             </label>
             <input
@@ -45,13 +45,13 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-4 py-3 text-base border-2 border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all bg-purple-50"
+              className="w-full px-4 py-3 text-base text-gray-800 border-2 border-blue-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all bg-blue-50/50 placeholder:text-gray-400"
               placeholder="owner@example.com"
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-bold text-purple-900 mb-2 uppercase tracking-wide">
+            <label htmlFor="password" className="block text-sm font-bold text-blue-900 mb-2 uppercase tracking-wide">
               Password
             </label>
             <input
@@ -60,7 +60,7 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-4 py-3 text-lg font-bold text-gray-900 border-2 border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all tracking-widest bg-purple-50"
+              className="w-full px-4 py-3 text-lg font-bold text-gray-800 border-2 border-blue-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all tracking-widest bg-blue-50/50 placeholder:text-gray-400"
               placeholder="••••••••"
               style={{ fontSize: '1.25rem' }}
             />
@@ -75,7 +75,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-4 px-4 text-base font-bold bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 focus:outline-none focus:ring-4 focus:ring-purple-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
+            className="w-full py-4 px-4 text-base font-bold bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-4 focus:ring-blue-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-2xl transform hover:scale-[1.02]"
           >
             {loading ? 'Signing in...' : 'Sign In'}
           </button>

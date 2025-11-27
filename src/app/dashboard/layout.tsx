@@ -14,30 +14,30 @@ export default function DashboardLayout({
 
   return (
     <RequireAuth>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-purple-50">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
         {/* Header */}
-        <header className="bg-gradient-to-r from-slate-900 via-purple-900 to-slate-900 border-b-2 border-purple-500 shadow-lg">
+        <header className="bg-white border-b border-gray-200 shadow-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center h-16">
               <div className="flex items-center gap-8">
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-300 to-blue-300 bg-clip-text text-transparent">Bizta Dashboard</h1>
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Bizta Dashboard</h1>
                 <nav className="flex gap-4">
                   <Link
                     href="/dashboard"
-                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
                       pathname === '/dashboard'
-                        ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-md'
-                        : 'text-purple-200 hover:bg-purple-800/50'
+                        ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md'
+                        : 'text-gray-700 hover:bg-blue-50'
                     }`}
                   >
                     Overview
                   </Link>
                   <Link
                     href="/dashboard/conversations"
-                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
                       pathname?.startsWith('/dashboard/conversations')
-                        ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-md'
-                        : 'text-purple-200 hover:bg-purple-800/50'
+                        ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md'
+                        : 'text-gray-700 hover:bg-blue-50'
                     }`}
                   >
                     Conversations
@@ -46,7 +46,7 @@ export default function DashboardLayout({
               </div>
               <button
                 onClick={logout}
-                className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 rounded-md transition-all shadow-md hover:shadow-lg"
+                className="px-4 py-2 text-sm font-semibold text-white bg-red-500 hover:bg-red-600 rounded-lg transition-all shadow-sm hover:shadow-md"
               >
                 Sign Out
               </button>
