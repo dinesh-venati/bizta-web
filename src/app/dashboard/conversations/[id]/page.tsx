@@ -2,7 +2,7 @@
 
 import { useState, FormEvent } from 'react';
 import { useParams } from 'next/navigation';
-import { useConversationDetail, useSendReply } from '@/lib/hooks/useDashboard';
+import { useConversationDetail, useSendReply, useTakeoverConversation, useReleaseConversation } from '@/lib/hooks/useDashboard';
 import { format } from 'date-fns';
 import Link from 'next/link';
 
@@ -12,6 +12,8 @@ export default function ConversationDetailPage() {
 
   const { data: conversation, isLoading, error } = useConversationDetail(conversationId);
   const sendReply = useSendReply(conversationId);
+  const takeoverMutation = useTakeoverConversation(conversationId);
+  const releaseMutation = useReleaseConversation(conversationId);
 
   const [replyMessage, setReplyMessage] = useState('');
 
@@ -73,8 +75,19 @@ export default function ConversationDetailPage() {
           </div>
           
           <div className="flex gap-2">
-            {conversation.requiresHuman && (
+            {/* Task 10: AI Status Badge */}
+            {conversation.inHumanHandling ? (
               <span className="px-3 py-1 text-sm font-medium bg-orange-100 text-orange-700 rounded">
+                🙋 Human Handling
+              </span>
+            ) : (
+              <span className="px-3 py-1 text-sm font-medium bg-green-100 text-green-700 rounded">
+                🤖 AI Active
+              </span>
+            )}
+            
+            {conversation.requiresHuman && (
+              <span className="px-3 py-1 text-sm font-medium bg-red-100 text-red-700 rounded">
                 Requires Human
               </span>
             )}
@@ -84,6 +97,34 @@ export default function ConversationDetailPage() {
               </span>
             )}
           </div>
+        </div>
+
+        {/* Task 10: Takeover/Release Controls */}
+        <div className="mt-6 flex gap-3">
+          {conversation.inHumanHandling ? (
+            <button
+              onClick={() => releaseMutation.mutate()}
+              disabled={releaseMutation.isPending}
+              className="px-6 py-2.5 text-sm font-semibold bg-gradient-to-r from-emerald-600 to-green-600 text-white rounded-lg hover:from-emerald-700 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm hover:shadow-md"
+            >
+              {releaseMutation.isPending ? 'Releasing...' : '✅ Release to AI'}
+            </button>
+          ) : (
+            <button
+              onClick={() => takeoverMutation.mutate()}
+              disabled={takeoverMutation.isPending}
+              className="px-6 py-2.5 text-sm font-semibold bg-gradient-to-r from-orange-600 to-red-600 text-white rounded-lg hover:from-orange-700 hover:to-red-700 focus:outline-none focus:ring-2 focus:ring-orange-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm hover:shadow-md"
+            >
+              {takeoverMutation.isPending ? 'Taking over...' : '🙋 Take Over as Human'}
+            </button>
+          )}
+          
+          {(takeoverMutation.isSuccess || releaseMutation.isSuccess) && (
+            <div className="flex items-center px-4 py-2 text-sm font-medium text-green-700 bg-green-50 border border-green-200 rounded-lg">
+              {takeoverMutation.isSuccess && '✓ You are now handling this conversation. AI has been paused.'}
+              {releaseMutation.isSuccess && '✓ AI resumed for this conversation.'}
+            </div>
+          )}
         </div>
 
         {/* Conversation Info */}

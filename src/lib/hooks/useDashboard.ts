@@ -50,6 +50,7 @@ export interface ConversationDetail {
   subIntent: string | null;
   leadScore: number | null;
   requiresHuman: boolean;
+  inHumanHandling: boolean; // Task 10
   channel: 'whatsapp';
   createdAt: string;
   lastMessageAt: string;
@@ -99,6 +100,20 @@ const sendReply = async (conversationId: string, message: string): Promise<SendR
   return data;
 };
 
+const takeoverConversation = async (conversationId: string): Promise<{ id: string; inHumanHandling: boolean }> => {
+  const { data } = await apiClient.post<{ id: string; inHumanHandling: boolean }>(
+    `/dashboard/conversations/${conversationId}/takeover`
+  );
+  return data;
+};
+
+const releaseConversation = async (conversationId: string): Promise<{ id: string; inHumanHandling: boolean }> => {
+  const { data } = await apiClient.post<{ id: string; inHumanHandling: boolean }>(
+    `/dashboard/conversations/${conversationId}/release`
+  );
+  return data;
+};
+
 // Hooks
 export const useTodaySummary = (date: 'today' | 'yesterday' | 'dayBeforeYesterday' = 'today') => {
   return useQuery({
@@ -136,6 +151,32 @@ export const useSendReply = (conversationId: string) => {
       // Also invalidate conversations list
       queryClient.invalidateQueries({
         queryKey: ['dashboard', 'conversations'],
+      });
+    },
+  });
+};
+
+export const useTakeoverConversation = (conversationId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => takeoverConversation(conversationId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['dashboard', 'conversation', conversationId],
+      });
+    },
+  });
+};
+
+export const useReleaseConversation = (conversationId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => releaseConversation(conversationId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['dashboard', 'conversation', conversationId],
       });
     },
   });
