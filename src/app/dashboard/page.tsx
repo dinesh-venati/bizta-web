@@ -34,26 +34,28 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900">Dashboard Overview</h2>
-        <p className="text-gray-600 mt-1">Monitor your AI assistant&apos;s performance</p>
+      <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+        <h2 className="text-3xl font-bold text-gray-900">Dashboard Overview</h2>
+        <p className="text-gray-600 mt-2 text-base">Monitor your AI assistant&apos;s performance</p>
       </div>
 
       {/* Date Range Tabs */}
-      <div className="flex gap-2 border-b border-gray-200">
-        {(['today', 'yesterday', 'dayBeforeYesterday'] as DateRange[]).map((date) => (
-          <button
-            key={date}
-            onClick={() => setSelectedDate(date)}
-            className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 ${
-              selectedDate === date
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
-            }`}
-          >
-            {dateLabels[date]}
-          </button>
-        ))}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="flex gap-2">
+          {(['today', 'yesterday', 'dayBeforeYesterday'] as DateRange[]).map((date) => (
+            <button
+              key={date}
+              onClick={() => setSelectedDate(date)}
+              className={`px-6 py-3 text-sm font-semibold rounded-lg transition-all ${
+                selectedDate === date
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              {dateLabels[date]}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -87,59 +89,61 @@ export default function DashboardPage() {
 
       {/* Message Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Customer Messages</h3>
-          <p className="text-3xl font-bold text-blue-600">{summary?.totalMessagesFromCustomersToday || 0}</p>
-          <p className="text-sm text-gray-500 mt-1">Received {dateLabels[selectedDate].toLowerCase()}</p>
+        <div className="bg-white rounded-lg shadow-md border-2 border-blue-200 p-6">
+          <h3 className="text-lg font-bold text-gray-900 mb-3">Customer Messages</h3>
+          <p className="text-4xl font-bold text-blue-600">{summary?.totalMessagesFromCustomersToday || 0}</p>
+          <p className="text-sm font-medium text-gray-600 mt-2">Received {dateLabels[selectedDate].toLowerCase()}</p>
         </div>
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Bizta Messages</h3>
-          <p className="text-3xl font-bold text-green-600">{summary?.totalMessagesFromBiztaToday || 0}</p>
-          <p className="text-sm text-gray-500 mt-1">Sent {dateLabels[selectedDate].toLowerCase()}</p>
+        <div className="bg-white rounded-lg shadow-md border-2 border-green-200 p-6">
+          <h3 className="text-lg font-bold text-gray-900 mb-3">Bizta Messages</h3>
+          <p className="text-4xl font-bold text-green-600">{summary?.totalMessagesFromBiztaToday || 0}</p>
+          <p className="text-sm font-medium text-gray-600 mt-2">Sent {dateLabels[selectedDate].toLowerCase()}</p>
         </div>
       </div>
 
       {/* Top Intents */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Top Customer Intents</h3>
+      <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
+        <h3 className="text-xl font-bold text-gray-900 mb-4">Top Customer Intents</h3>
         {summary?.topIntents && summary.topIntents.length > 0 ? (
           <div className="space-y-3">
             {summary.topIntents.map((item) => (
-              <div key={item.intent} className="flex items-center justify-between">
+              <div key={item.intent} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                 <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full" />
-                  <span className="text-sm font-medium text-gray-700">
+                  <div className="w-3 h-3 bg-blue-600 rounded-full" />
+                  <span className="text-base font-semibold text-gray-800">
                     {item.intent || 'Unknown'}
                   </span>
                 </div>
-                <span className="text-sm text-gray-500">{item.count} conversations</span>
+                <span className="text-base font-bold text-gray-700 bg-blue-100 px-3 py-1 rounded-full">
+                  {item.count}
+                </span>
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-gray-500 text-sm">No data for {dateLabels[selectedDate].toLowerCase()}</p>
+          <p className="text-gray-600 text-base font-medium">No data for {dateLabels[selectedDate].toLowerCase()}</p>
         )}
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+      <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
+        <h3 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Link
             href="/dashboard/conversations?filter=requiresHuman"
-            className="p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
+            className="p-5 border-2 border-orange-300 bg-orange-50 rounded-lg hover:border-orange-500 hover:bg-orange-100 transition-all hover:shadow-md"
           >
-            <h4 className="font-medium text-gray-900 mb-1">Review Human Requests</h4>
-            <p className="text-sm text-gray-600">
+            <h4 className="font-bold text-gray-900 mb-2 text-base">Review Human Requests</h4>
+            <p className="text-sm font-medium text-gray-700">
               Check conversations that need your attention
             </p>
           </Link>
           <Link
             href="/dashboard/conversations"
-            className="p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
+            className="p-5 border-2 border-blue-300 bg-blue-50 rounded-lg hover:border-blue-500 hover:bg-blue-100 transition-all hover:shadow-md"
           >
-            <h4 className="font-medium text-gray-900 mb-1">All Conversations</h4>
-            <p className="text-sm text-gray-600">
+            <h4 className="font-bold text-gray-900 mb-2 text-base">All Conversations</h4>
+            <p className="text-sm font-medium text-gray-700">
               Browse all customer interactions
             </p>
           </Link>
@@ -163,21 +167,28 @@ function StatCard({
   link?: string;
 }) {
   const colorClasses = {
-    blue: 'bg-blue-50 text-blue-700',
-    green: 'bg-green-50 text-green-700',
-    orange: 'bg-orange-50 text-orange-700',
-    purple: 'bg-purple-50 text-purple-700',
+    blue: 'text-blue-600 bg-blue-50',
+    green: 'text-green-600 bg-green-50',
+    orange: 'text-orange-600 bg-orange-50',
+    purple: 'text-purple-600 bg-purple-50',
+  };
+
+  const borderClasses = {
+    blue: 'border-blue-200',
+    green: 'border-green-200',
+    orange: 'border-orange-200',
+    purple: 'border-purple-200',
   };
 
   const content = (
     <>
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium text-gray-600">{title}</h3>
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">{title}</h3>
       </div>
-      <div className={`mt-2 text-3xl font-bold ${colorClasses[color]}`}>
+      <div className={`text-4xl font-bold ${colorClasses[color].split(' ')[0]} mb-2`}>
         {value}
       </div>
-      <p className="mt-1 text-sm text-gray-500">{description}</p>
+      <p className="text-sm font-medium text-gray-600">{description}</p>
     </>
   );
 
@@ -185,7 +196,7 @@ function StatCard({
     return (
       <Link
         href={link}
-        className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow"
+        className={`bg-white rounded-lg shadow-md border-2 ${borderClasses[color]} p-6 hover:shadow-xl transition-all hover:scale-105`}
       >
         {content}
       </Link>
@@ -193,7 +204,7 @@ function StatCard({
   }
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className={`bg-white rounded-lg shadow-md border-2 ${borderClasses[color]} p-6`}>
       {content}
     </div>
   );
