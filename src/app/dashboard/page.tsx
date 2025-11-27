@@ -34,13 +34,13 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-        <h2 className="text-3xl font-bold text-gray-900">Dashboard Overview</h2>
-        <p className="text-gray-600 mt-2 text-base">Monitor your AI assistant&apos;s performance</p>
+      <div className="bg-white rounded-lg shadow-lg p-6 border-2 border-purple-200">
+        <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">Dashboard Overview</h2>
+        <p className="text-gray-700 mt-2 text-base font-semibold">Monitor your AI assistant&apos;s performance</p>
       </div>
 
       {/* Date Range Tabs */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+      <div className="bg-white rounded-lg shadow-lg border-2 border-purple-200 p-4">
         <div className="flex gap-2">
           {(['today', 'yesterday', 'dayBeforeYesterday'] as DateRange[]).map((date) => (
             <button
@@ -48,8 +48,8 @@ export default function DashboardPage() {
               onClick={() => setSelectedDate(date)}
               className={`px-6 py-3 text-sm font-semibold rounded-lg transition-all ${
                 selectedDate === date
-                  ? 'bg-blue-600 text-white shadow-md'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg'
+                  : 'bg-purple-100 text-purple-700 hover:bg-purple-200'
               }`}
             >
               {dateLabels[date]}
@@ -167,17 +167,17 @@ function StatCard({
   link?: string;
 }) {
   const colorClasses = {
-    blue: 'text-blue-600 bg-blue-50',
-    green: 'text-green-600 bg-green-50',
-    orange: 'text-orange-600 bg-orange-50',
-    purple: 'text-purple-600 bg-purple-50',
+    blue: 'text-blue-700 bg-blue-50',
+    green: 'text-emerald-700 bg-emerald-50',
+    orange: 'text-amber-700 bg-amber-50',
+    purple: 'text-purple-700 bg-purple-50',
   };
 
   const borderClasses = {
-    blue: 'border-blue-200',
-    green: 'border-green-200',
-    orange: 'border-orange-200',
-    purple: 'border-purple-200',
+    blue: 'border-blue-400',
+    green: 'border-emerald-400',
+    orange: 'border-amber-400',
+    purple: 'border-purple-400',
   };
 
   const content = (
