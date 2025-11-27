@@ -2,7 +2,7 @@
 
 import { useState, FormEvent } from 'react';
 import { useParams } from 'next/navigation';
-import { useConversationDetail, useSendReply, useTakeoverConversation, useReleaseConversation } from '@/lib/hooks/useDashboard';
+import { useConversationDetail, useSendReply, useTakeoverConversation, useReleaseConversation, useCancelFollowup, useScheduleFollowup } from '@/lib/hooks/useDashboard';
 import { format } from 'date-fns';
 import Link from 'next/link';
 
@@ -14,8 +14,11 @@ export default function ConversationDetailPage() {
   const sendReply = useSendReply(conversationId);
   const takeoverMutation = useTakeoverConversation(conversationId);
   const releaseMutation = useReleaseConversation(conversationId);
+  const cancelFollowupMutation = useCancelFollowup(conversationId);
+  const scheduleFollowupMutation = useScheduleFollowup(conversationId);
 
   const [replyMessage, setReplyMessage] = useState('');
+  const [showFollowupOptions, setShowFollowupOptions] = useState(false);
 
   const handleSendReply = async (e: FormEvent) => {
     e.preventDefault();
@@ -126,6 +129,73 @@ export default function ConversationDetailPage() {
             </div>
           )}
         </div>
+
+        {/* Followup Controls - Only show when human is handling */}
+        {conversation.inHumanHandling && (
+          <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900">Followup Management</h3>
+                <p className="text-xs text-gray-600 mt-1">
+                  {conversation.followup.hasPending 
+                    ? `Scheduled for ${format(new Date(conversation.followup.nextScheduledAt!), 'MMM d, h:mm a')}`
+                    : 'No followup scheduled'}
+                </p>
+              </div>
+              <button
+                onClick={() => setShowFollowupOptions(!showFollowupOptions)}
+                className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+              >
+                {showFollowupOptions ? 'Hide' : 'Manage'}
+              </button>
+            </div>
+
+            {showFollowupOptions && (
+              <div className="flex flex-wrap gap-2 pt-3 border-t border-blue-200">
+                {conversation.followup.hasPending && (
+                  <button
+                    onClick={() => cancelFollowupMutation.mutate()}
+                    disabled={cancelFollowupMutation.isPending}
+                    className="px-4 py-2 text-sm font-medium bg-red-100 text-red-700 rounded-lg hover:bg-red-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {cancelFollowupMutation.isPending ? 'Cancelling...' : '❌ Cancel Followup'}
+                  </button>
+                )}
+                
+                <button
+                  onClick={() => scheduleFollowupMutation.mutate(24)}
+                  disabled={scheduleFollowupMutation.isPending}
+                  className="px-4 py-2 text-sm font-medium bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {scheduleFollowupMutation.isPending ? 'Scheduling...' : '📅 Schedule 24h'}
+                </button>
+
+                <button
+                  onClick={() => scheduleFollowupMutation.mutate(48)}
+                  disabled={scheduleFollowupMutation.isPending}
+                  className="px-4 py-2 text-sm font-medium bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  📅 Schedule 48h
+                </button>
+
+                <button
+                  onClick={() => scheduleFollowupMutation.mutate(72)}
+                  disabled={scheduleFollowupMutation.isPending}
+                  className="px-4 py-2 text-sm font-medium bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  📅 Schedule 3 days
+                </button>
+
+                {(cancelFollowupMutation.isSuccess || scheduleFollowupMutation.isSuccess) && (
+                  <div className="w-full mt-2 px-3 py-2 text-xs font-medium text-green-700 bg-green-50 border border-green-200 rounded">
+                    {cancelFollowupMutation.isSuccess && '✓ Followup cancelled'}
+                    {scheduleFollowupMutation.isSuccess && '✓ Followup scheduled successfully'}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Conversation Info */}
         <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg">

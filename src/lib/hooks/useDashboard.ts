@@ -114,6 +114,21 @@ const releaseConversation = async (conversationId: string): Promise<{ id: string
   return data;
 };
 
+const cancelFollowup = async (conversationId: string): Promise<{ success: boolean; message: string }> => {
+  const { data } = await apiClient.post<{ success: boolean; message: string }>(
+    `/dashboard/conversations/${conversationId}/followup/cancel`
+  );
+  return data;
+};
+
+const scheduleFollowup = async (conversationId: string, delayHours?: number): Promise<{ success: boolean; message: string; scheduledAt: string }> => {
+  const { data } = await apiClient.post<{ success: boolean; message: string; scheduledAt: string }>(
+    `/dashboard/conversations/${conversationId}/followup/schedule`,
+    { delayHours }
+  );
+  return data;
+};
+
 // Hooks
 export const useTodaySummary = (date: 'today' | 'yesterday' | 'dayBeforeYesterday' = 'today') => {
   return useQuery({
@@ -174,6 +189,32 @@ export const useReleaseConversation = (conversationId: string) => {
 
   return useMutation({
     mutationFn: () => releaseConversation(conversationId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['dashboard', 'conversation', conversationId],
+      });
+    },
+  });
+};
+
+export const useCancelFollowup = (conversationId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => cancelFollowup(conversationId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['dashboard', 'conversation', conversationId],
+      });
+    },
+  });
+};
+
+export const useScheduleFollowup = (conversationId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (delayHours?: number) => scheduleFollowup(conversationId, delayHours),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['dashboard', 'conversation', conversationId],
