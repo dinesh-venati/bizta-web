@@ -36,7 +36,7 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <div className="bg-white rounded-2xl shadow-sm p-6 border border-blue-100">
         <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Dashboard Overview</h2>
-        <p className="text-gray-600 mt-2 text-base font-medium">Monitor your AI assistant's performance</p>
+        <p className="text-gray-600 mt-2 text-base font-medium">Monitor your AI assistant&apos;s performance</p>
       </div>
 
       {/* Date Range Tabs */}
